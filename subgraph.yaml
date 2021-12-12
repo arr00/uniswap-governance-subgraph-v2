@@ -42,7 +42,7 @@ dataSources:
     source:
       address: "0xC4e172459f1E7939D522503B81AFAaC1014CE6F6"
       abi: GovernorAlpha
-      startBlock: 12543659
+      startBlock: 12686654
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.3

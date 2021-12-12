@@ -67,11 +67,29 @@ type Proposal @entity {
   "Call data for the change"
   calldatas: [Bytes!]
 
+  "Block number proposal was created in"
+  creationBlock: BigInt!
+
+  "Timestamp of block proposal was created in"
+  creationTime: BigInt!
+
   "Block number from where the voting starts"
   startBlock: BigInt!
 
   "Block number from where the voting ends"
   endBlock: BigInt!
+
+  "Block number proposal was executed in"
+  executionBlock: BigInt
+
+  "Timestamp of block proposal was executed in"
+  executionTime: BigInt
+
+  "Block number proposal was canceled in"
+  cancellationBlock: BigInt
+
+  "Timestamp of block proposal was canceled in"
+  cancellationTime: BigInt
 
   "String description of the change"
   description: String!
