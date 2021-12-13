@@ -183,6 +183,10 @@ export function handleVoteCast(event: VoteCast): void {
 
   vote.save();
 
+  // Increment proposals voted for voter
+  voter.numberVotes = voter.numberVotes + 1;
+  voter.save();
+
   if (proposal.status == STATUS_PENDING) {
     proposal.status = STATUS_ACTIVE;
     proposal.save();

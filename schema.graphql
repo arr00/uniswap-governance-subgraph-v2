@@ -44,6 +44,9 @@ type Delegate @entity {
   "Votes that a delegate has made in different proposals"
   votes: [Vote!]! @derivedFrom(field: "voter")
 
+  "Number of proposals voted on"
+  numberVotes: Int!
+
   "Proposals that the delegate has created"
   proposals: [Proposal!]! @derivedFrom(field: "proposer")
 }

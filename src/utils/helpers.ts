@@ -60,6 +60,7 @@ export function getOrCreateDelegate(
     delegate = new Delegate(id);
     delegate.delegatedVotesRaw = BIGINT_ZERO;
     delegate.delegatedVotes = BIGDECIMAL_ZERO;
+    delegate.numberVotes = 0;
     delegate.tokenHoldersRepresentedAmount = 0;
 
     if (id != ZERO_ADDRESS) {
