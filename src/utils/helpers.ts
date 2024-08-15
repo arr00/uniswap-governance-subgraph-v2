@@ -6,14 +6,6 @@ import {
   Vote
 } from "../../generated/schema";
 import {
-  Address,
-  EthereumEvent,
-  BigInt,
-  Bytes,
-  log
-} from "@graphprotocol/graph-ts";
-import { DEFAULT_DECIMALS, toDecimal } from "./decimals";
-import {
   ZERO_ADDRESS,
   BIGINT_ZERO,
   BIGINT_ONE,

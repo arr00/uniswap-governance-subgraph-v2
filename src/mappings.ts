@@ -4,20 +4,20 @@ import {
   ProposalCanceled,
   ProposalQueued,
   ProposalExecuted,
-  VoteCast
+  VoteCast,
 } from "../generated/GovernorAlpha/GovernorAlpha";
 import { VoteCast as VoteCastBravo } from "../generated/GovernorBravo/GovernorBravo";
 import {
   DelegateChanged,
   DelegateVotesChanged,
-  Transfer
+  Transfer,
 } from "../generated/CompoundToken/CompoundToken";
 import {
   getOrCreateTokenHolder,
   getOrCreateDelegate,
   getOrCreateProposal,
   getOrCreateVote,
-  getGovernanceEntity
+  getGovernanceEntity,
 } from "./utils/helpers";
 import {
   ZERO_ADDRESS,
@@ -28,7 +28,7 @@ import {
   STATUS_QUEUED,
   STATUS_PENDING,
   STATUS_EXECUTED,
-  STATUS_CANCELLED
+  STATUS_CANCELLED,
 } from "./utils/constants";
 import { toDecimal } from "./utils/decimals";
 
@@ -36,14 +36,14 @@ import { toDecimal } from "./utils/decimals";
 //   handler: handleProposalCreated
 
 export function handleProposalCreated(event: ProposalCreated): void {
-  let proposal = getOrCreateProposal(
-    getProposalId(
-      event.block.number,
-      event.address,
-      event.params.id,
-      event.transaction.hash.toHexString()
-    )
+  let proposalId = getProposalId(
+    event.block.number,
+    event.address,
+    event.params.id,
+    event.transaction.hash.toHexString()
   );
+  if(proposalId == "") return;
+  let proposal = getOrCreateProposal(proposalId);
   let proposer = getOrCreateDelegate(
     event.params.proposer.toHexString(),
     false
@@ -54,7 +54,7 @@ export function handleProposalCreated(event: ProposalCreated): void {
   if (proposer == null) {
     log.error("Delegate {} not found on ProposalCreated. tx_hash: {}", [
       event.params.proposer.toHexString(),
-      event.transaction.hash.toHexString()
+      event.transaction.hash.toHexString(),
     ]);
   }
 
@@ -62,7 +62,7 @@ export function handleProposalCreated(event: ProposalCreated): void {
   proposer = getOrCreateDelegate(event.params.proposer.toHexString());
 
   proposal.proposer = proposer.id;
-  proposal.targets = event.params.targets as Bytes[];
+  proposal.targets = changetype<Bytes[]>(event.params.targets);
   proposal.values = event.params.values;
   proposal.signatures = event.params.signatures;
   proposal.calldatas = event.params.calldatas;
@@ -137,7 +137,7 @@ export function handleProposalExecuted(event: ProposalExecuted): void {
   proposal.executionETA = null;
   proposal.executionBlock = event.block.number;
   proposal.executionTime = event.block.timestamp;
-  
+
   proposal.save();
 
   governance.proposalsQueued = governance.proposalsQueued - BIGINT_ONE;
@@ -168,7 +168,7 @@ export function handleVoteCast(event: VoteCast): void {
   if (voter == null) {
     log.error("Delegate {} not found on VoteCast. tx_hash: {}", [
       event.params.voter.toHexString(),
-      event.transaction.hash.toHexString()
+      event.transaction.hash.toHexString(),
     ]);
   }
 
@@ -217,7 +217,7 @@ export function handleVoteCastBravo(event: VoteCastBravo): void {
   if (voter == null) {
     log.error("Delegate {} not found on VoteCast. tx_hash: {}", [
       event.params.voter.toHexString(),
-      event.transaction.hash.toHexString()
+      event.transaction.hash.toHexString(),
     ]);
   }
 
@@ -231,6 +231,10 @@ export function handleVoteCastBravo(event: VoteCastBravo): void {
   vote.support = event.params.support === 1;
 
   vote.save();
+
+  // Increment proposals voted for voter
+  voter.numberVotes = voter.numberVotes + 1;
+  voter.save();
 
   if (proposal.status == STATUS_PENDING) {
     proposal.status = STATUS_ACTIVE;
@@ -305,7 +309,7 @@ export function handleTransfer(event: Transfer): void {
     if (fromHolder.tokenBalanceRaw < BIGINT_ZERO) {
       log.error("Negative balance on holder {} with balance {}", [
         fromHolder.id,
-        fromHolder.tokenBalanceRaw.toString()
+        fromHolder.tokenBalanceRaw.toString(),
       ]);
     }
 
@@ -361,30 +365,33 @@ function getProposalId(
   txHash: String
 ): String {
   if (
-    contract == Address.fromString("0x5e4be8Bc9637f0EAA1A755019e06A68ce081D58F")
+    contract! ==
+    Address.fromString("0x5e4be8Bc9637f0EAA1A755019e06A68ce081D58F")
   ) {
     if (block > BigInt.fromI32(12686655)) {
       log.error("Old governance used after transition. tx_hash: {}", [txHash]);
-      return null;
+      return "";
     } else {
       return baseId.toString();
     }
   } else if (
-    contract == Address.fromString("0xC4e172459f1E7939D522503B81AFAaC1014CE6F6")
+    contract! ==
+    Address.fromString("0xC4e172459f1E7939D522503B81AFAaC1014CE6F6")
   ) {
     if (block > BigInt.fromI32(13284644)) {
       log.error("Old governance used after transition. tx_hash: {}", [txHash]);
-      return null;
+      return "";
     } else {
       let newId = baseId + BIGINT_FIVE;
       return newId.toString();
     }
   } else if (
-    contract == Address.fromString("0x408ED6354d4973f66138C91495F2f2FCbd8724C3")
+    contract! ==
+    Address.fromString("0x408ED6354d4973f66138C91495F2f2FCbd8724C3")
   ) {
     return baseId.toString();
   } else {
     log.error("Fatal error, get proposal id fault. Tx hash: {}", [txHash]);
-    return null;
+    return "";
   }
 }
