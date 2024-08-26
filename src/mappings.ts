@@ -42,7 +42,7 @@ export function handleProposalCreated(event: ProposalCreated): void {
     event.params.id,
     event.transaction.hash.toHexString()
   );
-  if(proposalId == "") return;
+  if (proposalId == "") return;
   let proposal = getOrCreateProposal(proposalId);
   let proposer = getOrCreateDelegate(
     event.params.proposer.toHexString(),
@@ -148,14 +148,15 @@ export function handleProposalExecuted(event: ProposalExecuted): void {
 //   handler: handleVoteCast
 
 export function handleVoteCast(event: VoteCast): void {
-  let proposal = getOrCreateProposal(
-    getProposalId(
-      event.block.number,
-      event.address,
-      event.params.proposalId,
-      event.transaction.hash.toHexString()
-    )
+  if (event.params.votes == BIGINT_ZERO) return;
+  let proposalId = getProposalId(
+    event.block.number,
+    event.address,
+    event.params.proposalId,
+    event.transaction.hash.toHexString()
   );
+  if (proposalId == "") return;
+  let proposal = getOrCreateProposal(proposalId);
   let voteId = event.params.voter
     .toHexString()
     .concat("-")
@@ -197,14 +198,15 @@ export function handleVoteCast(event: VoteCast): void {
 //   handler: handleVoteCastBravo
 
 export function handleVoteCastBravo(event: VoteCastBravo): void {
-  let proposal = getOrCreateProposal(
-    getProposalId(
-      event.block.number,
-      event.address,
-      event.params.proposalId,
-      event.transaction.hash.toHexString()
-    )
+  if (event.params.votes == BIGINT_ZERO) return;
+  let proposalId = getProposalId(
+    event.block.number,
+    event.address,
+    event.params.proposalId,
+    event.transaction.hash.toHexString()
   );
+  if (proposalId == "") return;
+  let proposal = getOrCreateProposal(proposalId);
   let voteId = event.params.voter
     .toHexString()
     .concat("-")
